@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <pwd.h>
+
+void displayFilePermissions(const char *filename) {
+    struct stat fileInfo;
+    
+    if (stat(filename, &fileInfo) == -1) {
+        perror("stat");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("File: %s\n", filename);
+    printf("Permissions: ");
+    printf((S_ISDIR(fileInfo.st_mode)) ? "d" : "-");
+    printf((fileInfo.st_mode & S_IRUSR) ? "r" : "-");
+    printf((fileInfo.st_mode & S_IWUSR) ? "w" : "-");
+    printf((fileInfo.st_mode & S_IXUSR) ? "x" : "-");
+    printf((fileInfo.st_mode & S_IRGRP) ? "r" : "-");
+    printf((fileInfo.st_mode & S_IWGRP) ? "w" : "-");
+    printf((fileInfo.st_mode & S_IXGRP) ? "x" : "-");
+    printf((fileInfo.st_mode & S_IROTH) ? "r" : "-");
+    printf((fileInfo.st_mode & S_IWOTH) ? "w" : "-");
+    printf((fileInfo.st_mode & S_IXOTH) ? "x" : "-");
+    printf("\n");
+}
+
+void changeFilePermissions(const char *filename, mode_t mode) {
+    if (chmod(filename, mode) == -1) {
+        perror("chmod");
+        exit(EXIT_FAILURE);
+    }
+    printf("Permissions changed successfully.\n");
+}
+
+void displayUserInfo(uid_t uid) {
+    struct passwd *pw;
+    
+    pw = getpwuid(uid);
+    if (pw != NULL) {
+        printf("User ID: %d, Username: %s\n", uid, pw->pw_name);
+    } else {
+        printf("User ID: %d\n", uid);
+    }
+}
+
+int main() {
+    const char *filename = "example.txt";
+    mode_t newPermissions = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; 
+    
+    
+    displayFilePermissions(filename);
+
+    changeFilePermissions(filename, newPermissions);
+    
+ 
+    displayFilePermissions(filename);
+    
+   
+    displayUserInfo(getuid());
+    displayUserInfo(0);
+    return 0;
+}
